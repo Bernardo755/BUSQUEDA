@@ -5,12 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Buscador de Registros</title>
     <style>
-        /* 1. Arquitectura de UI: Centrado y fondo */
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background-color: #b2ff59; /* Verde claro brillante */
             margin: 0;
-            /* Flexbox para centrar contenido vertical y horizontalmente */
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -18,23 +16,22 @@
             min-height: 100vh;
         }
 
-        /* Contenedor tipo tarjeta para que los controles resalten */
         .tarjeta-busqueda {
             background: white;
             padding: 30px;
             border-radius: 12px;
             box-shadow: 0 8px 20px rgba(0,0,0,0.15);
-            width: 90%;
-            max-width: 450px;
+            width: 95%;
+            max-width: 900px; /* Más ancho para la tabla */
             text-align: center;
         }
 
         .controles {
             display: flex;
-            flex-direction: column;
-            gap: 15px; /* Espaciado uniforme entre elementos */
+            flex-direction: row;
+            gap: 10px;
             margin-bottom: 20px;
-            margin-top: 20px;
+            justify-content: center;
         }
 
         input, select, button {
@@ -42,11 +39,6 @@
             font-size: 16px;
             border: 1px solid #ccc;
             border-radius: 6px;
-            outline: none;
-        }
-
-        input:focus, select:focus {
-            border-color: #4caf50; /* Resalta en verde al seleccionar */
         }
 
         button {
@@ -55,111 +47,111 @@
             border: none;
             cursor: pointer;
             font-weight: bold;
-            transition: background-color 0.2s;
         }
 
-        button:hover {
-            background-color: #388e3c;
+        button:hover { background-color: #388e3c; }
+
+        /* Estilos de la tabla */
+        .contenedor-tabla {
+            overflow-x: auto;
+            margin-top: 20px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
         }
 
-        .usuario {
-            background: #f9f9f9;
-            margin: 10px 0;
-            padding: 15px;
-            border-left: 5px solid #4caf50;
-            border-radius: 4px;
-            text-align: left;
+        table {
+            width: 100%;
+            border-collapse: collapse;
             font-size: 14px;
         }
 
-        /* Scroll interno si hay muchos resultados */
-        #contenedor-datos {
-            max-height: 300px;
-            overflow-y: auto;
+        th {
+            background: #4caf50;
+            color: white;
+            padding: 12px;
         }
+
+        td {
+            padding: 10px;
+            border-bottom: 1px solid #eee;
+            white-space: nowrap;
+        }
+
+        tr:hover { background-color: #f1f8e9; }
     </style>
 </head>
 <body>
 
     <div class="tarjeta-busqueda">
-        <h2>Consultar Base de Datos</h2>
+        <h2>Buscador de Registros</h2>
         
         <div class="controles">
-            <input type="text" id="valorBusqueda" placeholder="Escribe el valor a buscar...">
-            
+            <input type="text" id="valorBusqueda" placeholder="Valor a buscar...">
             <select id="columnaBusqueda">
                 <option value="Nombre">Nombre</option>
                 <option value="CURP">CURP</option>
                 <option value="Folio">Folio</option>
             </select>
-            
-            <button onclick="ejecutarBusqueda()">Buscar registro</button>
+            <button onclick="ejecutarBusqueda()">Buscar</button>
         </div>
 
-        <div id="contenedor-datos">
-            <!-- Los resultados aparecerán aquí -->
+        <div id="contenedor-resultados">
+            <!-- Aquí se insertará la tabla -->
         </div>
     </div>
-<script>
-        // Pega aquí la URL de tu NUEVO despliegue
-        const API_URL = 'https://script.google.com/macros/s/AKfycbwwzviSj9taMZ-4PU02wKLPVGpiS7VUcdYdtB0Zb6HesIyMF9uyeEAWLReh8YKuLvDYdw/exec';
+
+    <script>
+        // ¡IMPORTANTE! Cambia esta URL por la de tu nuevo despliegue en Google Apps Script
+        const API_URL = 'https://script.google.com/macros/s/AKfycbypo0g-j6YZbjONlD3HfNiL6uMP-Rxm3DClDAXpOuVJwLeip85HCvw2Ve83yjg5Zne-/exec';
 
         async function ejecutarBusqueda() {
             const valor = document.getElementById('valorBusqueda').value.trim();
             const columna = document.getElementById('columnaBusqueda').value;
-            const contenedor = document.getElementById('contenedor-datos');
+            const contenedor = document.getElementById('contenedor-resultados');
 
-            if (!valor) {
-                contenedor.innerHTML = '<p style="color: #d32f2f;">Por favor, ingresa un valor.</p>';
-                return;
-            }
+            if (!valor) return alert("Por favor ingresa un valor");
 
-            contenedor.innerHTML = '<p>Buscando en el servidor...</p>';
+            contenedor.innerHTML = '<p>Consultando servidor...</p>';
 
             try {
-                // Construimos la URL con los parámetros de búsqueda
-                // encodeURIComponent asegura que espacios o caracteres especiales no rompan la URL
-                const urlDeBusqueda = `${API_URL}?columna=${columna}&valor=${encodeURIComponent(valor)}`;
-                
-                const respuesta = await fetch(urlDeBusqueda);
-                if (!respuesta.ok) throw new Error('Error en la red');
-                
-                const resultados = await respuesta.json();
-
-                // Limpiar resultados anteriores
-                contenedor.innerHTML = '';
+                const response = await fetch(`${API_URL}?columna=${columna}&valor=${encodeURIComponent(valor)}`);
+                const resultados = await response.json();
 
                 if (resultados.length === 0) {
                     contenedor.innerHTML = '<p>No se encontraron registros.</p>';
                     return;
                 }
 
-                // Renderizar los resultados con las nuevas columnas A, B, C, D, E
-                // ... dentro de ejecutarBusqueda, donde procesas los resultados ...
-contenedor.innerHTML = `
-    <div style="overflow-x: auto;">
-        <table border="1" style="width:100%; border-collapse: collapse; font-size: 12px; text-align: left;">
-            <thead>
-                <tr style="background: #e0e0e0;">
-                    <th>T</th><th>S</th><th>B</th><th>D</th><th>F</th><th>G</th><th>M</th><th>R</th><th>Q</th>
-                </tr>
-            </thead>
-            <tbody id="tabla-body"></tbody>
-        </table>
-    </div>
-`;
+                // Construcción de la tabla
+                let html = `
+                    <div class="contenedor-tabla">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>T</th><th>S</th><th>B</th><th>D</th><th>F</th><th>G</th><th>M</th><th>R</th><th>Q</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tabla-body"></tbody>
+                        </table>
+                    </div>
+                `;
+                contenedor.innerHTML = html;
 
-const tablaBody = document.getElementById('tabla-body');
-resultados.forEach(fila => {
-    const tr = document.createElement('tr');
-    tr.innerHTML = `
-        <td>${fila.T}</td><td>${fila.S}</td><td>${fila.B}</td>
-        <td>${fila.D}</td><td>${fila.F}</td><td>${fila.G}</td>
-        <td>${fila.M}</td><td>${fila.R}</td><td>${fila.Q}</td>
-    `;
-    tablaBody.appendChild(tr);
-});
+                const tbody = document.getElementById('tabla-body');
+                resultados.forEach(f => {
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `
+                        <td>${f.T}</td><td>${f.S}</td><td>${f.B}</td>
+                        <td>${f.D}</td><td>${f.F}</td><td>${f.G}</td>
+                        <td>${f.M}</td><td>${f.R}</td><td>${f.Q}</td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+
+            } catch (error) {
+                contenedor.innerHTML = '<p style="color:red;">Error al conectar con la base de datos.</p>';
+            }
+        }
     </script>
-  
 </body>
 </html>
