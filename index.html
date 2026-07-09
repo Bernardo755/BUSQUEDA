@@ -3,40 +3,169 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mi App con Google Sheets</title>
+    <title>Buscador de Registros</title>
     <style>
-        body { font-family: Arial, sans-serif; padding: 20px; }
-        .usuario { background: #f0f0f0; margin: 10px 0; padding: 10px; border-radius: 5px; }
+        /* 1. Arquitectura de UI: Centrado y fondo */
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #b2ff59; /* Verde claro brillante */
+            margin: 0;
+            /* Flexbox para centrar contenido vertical y horizontalmente */
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+        }
+
+        /* Contenedor tipo tarjeta para que los controles resalten */
+        .tarjeta-busqueda {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+            width: 90%;
+            max-width: 450px;
+            text-align: center;
+        }
+
+        .controles {
+            display: flex;
+            flex-direction: column;
+            gap: 15px; /* Espaciado uniforme entre elementos */
+            margin-bottom: 20px;
+            margin-top: 20px;
+        }
+
+        input, select, button {
+            padding: 12px;
+            font-size: 16px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            outline: none;
+        }
+
+        input:focus, select:focus {
+            border-color: #4caf50; /* Resalta en verde al seleccionar */
+        }
+
+        button {
+            background-color: #4caf50;
+            color: white;
+            border: none;
+            cursor: pointer;
+            font-weight: bold;
+            transition: background-color 0.2s;
+        }
+
+        button:hover {
+            background-color: #388e3c;
+        }
+
+        .usuario {
+            background: #f9f9f9;
+            margin: 10px 0;
+            padding: 15px;
+            border-left: 5px solid #4caf50;
+            border-radius: 4px;
+            text-align: left;
+            font-size: 14px;
+        }
+
+        /* Scroll interno si hay muchos resultados */
+        #contenedor-datos {
+            max-height: 300px;
+            overflow-y: auto;
+        }
     </style>
 </head>
 <body>
-    <h1>Mi Base de Datos de Google Sheets</h1>
-    <div id="contenedor-datos">Cargando datos...</div>
+
+    <div class="tarjeta-busqueda">
+        <h2>Consultar Base de Datos</h2>
+        
+        <div class="controles">
+            <input type="text" id="valorBusqueda" placeholder="Escribe el valor a buscar...">
+            
+            <select id="columnaBusqueda">
+                <option value="Nombre">Nombre</option>
+                <option value="CURP">CURP</option>
+                <option value="Folio">Folio</option>
+            </select>
+            
+            <button onclick="ejecutarBusqueda()">Buscar registro</button>
+        </div>
+
+        <div id="contenedor-datos">
+            <!-- Los resultados aparecerán aquí -->
+        </div>
+    </div>
 
     <script>
-        // Pega aquí la URL que te dio Google Apps Script
         const API_URL = 'https://script.google.com/macros/s/AKfycbypo0g-j6YZbjONlD3HfNiL6uMP-Rxm3DClDAXpOuVJwLeip85HCvw2Ve83yjg5Zne-/exec';
 
-        // Hacer la petición a Google Sheets
-        fetch(API_URL)
-            .then(response => response.json())
-            .then(data => {
-                const contenedor = document.getElementById('contenedor-datos');
-                contenedor.innerHTML = ''; // Borramos el texto de "Cargando..."
-                
-                // Recorremos los datos y creamos HTML para cada fila
-                data.forEach(fila => {
+        // Variable global para actuar como caché de la base de datos
+        let datosCacheados = null;
+
+        async function ejecutarBusqueda() {
+            const valor = document.getElementById('valorBusqueda').value.trim().toLowerCase();
+            const columna = document.getElementById('columnaBusqueda').value;
+            const contenedor = document.getElementById('contenedor-datos');
+
+            if (!valor) {
+                contenedor.innerHTML = '<p style="color: #d32f2f;">Por favor, ingresa un valor para buscar.</p>';
+                return;
+            }
+
+            contenedor.innerHTML = '<p>Buscando...</p>';
+
+            try {
+                // Solo hacemos el fetch si es la primera búsqueda
+                if (!datosCacheados) {
+                    const respuesta = await fetch(API_URL);
+                    if (!respuesta.ok) throw new Error('Error en la red');
+                    datosCacheados = await respuesta.json();
+                }
+
+                // Filtrar los datos en memoria
+                const resultados = datosCacheados.filter(fila => {
+                    // Validamos que la celda no esté vacía antes de convertir a texto
+                    const valorCelda = fila[columna] ? fila[columna].toString().toLowerCase() : '';
+                    return valorCelda.includes(valor);
+                });
+
+                // Limpiar resultados anteriores
+                contenedor.innerHTML = '';
+
+                if (resultados.length === 0) {
+                    contenedor.innerHTML = '<p>No se encontraron registros.</p>';
+                    return;
+                }
+
+                // Renderizar los resultados encontrados
+                resultados.forEach(fila => {
                     const div = document.createElement('div');
                     div.className = 'usuario';
-                    // Nota: 'Nombre' y 'Edad' deben coincidir exactamente con los títulos de tus columnas
-                    div.innerHTML = `<strong>${fila.Nombre}</strong> - ${fila.Edad} años`;
+                    
+                    // Extraemos los datos validando si existen, de lo contrario mostramos "N/A"
+                    const nombre = fila.Nombre || 'N/A';
+                    const curp = fila.CURP || 'N/A';
+                    const folio = fila.Folio || 'N/A';
+                    
+                    div.innerHTML = `
+                        <strong>Nombre:</strong> ${nombre} <br>
+                        <strong>CURP:</strong> ${curp} <br>
+                        <strong>Folio:</strong> ${folio}
+                    `;
                     contenedor.appendChild(div);
                 });
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                document.getElementById('contenedor-datos').innerHTML = 'Hubo un error al cargar los datos.';
-            });
+
+            } catch (error) {
+                console.error('Error del sistema:', error);
+                contenedor.innerHTML = '<p style="color: #d32f2f;">Hubo un error de conexión.</p>';
+                datosCacheados = null; // Reseteamos la caché para que el usuario pueda reintentar
+            }
+        }
     </script>
 </body>
 </html>
