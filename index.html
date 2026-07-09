@@ -17,9 +17,14 @@
             min-height: 100vh;
         }
 .logo-app {
-    max-width: 450px; /* Ancho máximo */
-    height: 150px;     /* Mantiene la proporción original */
-    margin-bottom: 5px;
+    width: 200px;         /* Define el ancho máximo de tu marco */
+    height: 120px;        /* Define la altura máxima de tu marco */
+    
+    /* ESTA ES LA MAGIA */
+    object-fit: contain;  /* Escala la imagen para que quepa entera sin deformarse */
+    
+    margin-bottom: 20px;
+    background-color: transparent; /* Opcional: por si el marco es más grande que la imagen */
 }
         .tarjeta-busqueda {
             background: white;
