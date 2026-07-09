@@ -22,6 +22,8 @@
             width: 50%; 
             height: auto; /* Mantiene la proporción para no deformarse */
             margin-bottom: 20px;
+         background-color: white; /* Esto hará que el fondo negro se vea como un recuadro blanco */
+    border-radius: 8px;
         }
         .tarjeta-busqueda {
             background: white;
@@ -116,7 +118,7 @@
 
     <script>
         // ¡IMPORTANTE! Cambia esta URL por la de tu nuevo despliegue
-        const API_URL = 'https://script.google.com/macros/s/AKfycbzLjfvqwU1LN8krJvgs3XoOxK7ONrObUyy0qtY9oSb9xmiufu20VZ4BME6wbYv6O3UdAA/exec';
+        const API_URL = 'https://script.google.com/macros/s/AKfycbxTmLYMIfnRjlXYxQnVZ44lf8Ne2NuNJrBHCKbawWGGewCPaVGwiDl6X61Zs2x_l1pd-g/exec';
 
         async function ejecutarBusqueda() {
             const valor = document.getElementById('valorBusqueda').value.trim();
