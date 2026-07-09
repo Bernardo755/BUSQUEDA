@@ -15,17 +15,14 @@
             align-items: center;
             justify-content: center;
             min-height: 100vh;
+       }
+
+        /* AJUSTE APLICADO: La imagen ocupa el 50% del ancho del contenedor */
+        .logo-app {
+            width: 50%; 
+            height: auto; /* Mantiene la proporción para no deformarse */
+            margin-bottom: 20px;
         }
-.logo-app {
-    width: 200px;         /* Define el ancho máximo de tu marco */
-    height: 120px;        /* Define la altura máxima de tu marco */
-    
-    /* ESTA ES LA MAGIA */
-    object-fit: contain;  /* Escala la imagen para que quepa entera sin deformarse */
-    
-    margin-bottom: 20px;
-    background-color: transparent; /* Opcional: por si el marco es más grande que la imagen */
-}
         .tarjeta-busqueda {
             background: white;
             padding: 30px;
