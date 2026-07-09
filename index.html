@@ -135,25 +135,30 @@
                 }
 
                 // Renderizar los resultados con las nuevas columnas A, B, C, D, E
-                resultados.forEach(fila => {
-                    const div = document.createElement('div');
-                    div.className = 'usuario';
-                    
-                    div.innerHTML = `
-                        <strong>Columna A:</strong> ${fila.DatoA || 'N/A'} <br>
-                        <strong>Columna B:</strong> ${fila.DatoB || 'N/A'} <br>
-                        <strong>Columna C:</strong> ${fila.DatoC || 'N/A'} <br>
-                        <strong>Columna D:</strong> ${fila.DatoD || 'N/A'} <br>
-                        <strong>Columna E:</strong> ${fila.DatoE || 'N/A'}
-                    `;
-                    contenedor.appendChild(div);
-                });
+                // ... dentro de ejecutarBusqueda, donde procesas los resultados ...
+contenedor.innerHTML = `
+    <div style="overflow-x: auto;">
+        <table border="1" style="width:100%; border-collapse: collapse; font-size: 12px; text-align: left;">
+            <thead>
+                <tr style="background: #e0e0e0;">
+                    <th>T</th><th>S</th><th>B</th><th>D</th><th>F</th><th>G</th><th>M</th><th>R</th><th>Q</th>
+                </tr>
+            </thead>
+            <tbody id="tabla-body"></tbody>
+        </table>
+    </div>
+`;
 
-            } catch (error) {
-                console.error('Error del sistema:', error);
-                contenedor.innerHTML = '<p style="color: #d32f2f;">Hubo un error de conexión.</p>';
-            }
-        }
+const tablaBody = document.getElementById('tabla-body');
+resultados.forEach(fila => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+        <td>${fila.T}</td><td>${fila.S}</td><td>${fila.B}</td>
+        <td>${fila.D}</td><td>${fila.F}</td><td>${fila.G}</td>
+        <td>${fila.M}</td><td>${fila.R}</td><td>${fila.Q}</td>
+    `;
+    tablaBody.appendChild(tr);
+});
     </script>
   
 </body>
