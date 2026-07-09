@@ -100,39 +100,31 @@
             <!-- Los resultados aparecerán aquí -->
         </div>
     </div>
-
-    <script>
-        const API_URL = 'https://script.google.com/macros/s/AKfycbypo0g-j6YZbjONlD3HfNiL6uMP-Rxm3DClDAXpOuVJwLeip85HCvw2Ve83yjg5Zne-/exec';
-
-        // Variable global para actuar como caché de la base de datos
-        let datosCacheados = null;
+<script>
+        // Pega aquí la URL de tu NUEVO despliegue
+        const API_URL = 'https://script.google.com/macros/s/AKfycbzJkOHgu8qco1BrGkHUEgnvvimcmNPDOXH_OvbNAbwKMpLg8lJzANa3ELqp9jLR2uR1Ug/exec';
 
         async function ejecutarBusqueda() {
-            const valor = document.getElementById('valorBusqueda').value.trim().toLowerCase();
+            const valor = document.getElementById('valorBusqueda').value.trim();
             const columna = document.getElementById('columnaBusqueda').value;
             const contenedor = document.getElementById('contenedor-datos');
 
             if (!valor) {
-                contenedor.innerHTML = '<p style="color: #d32f2f;">Por favor, ingresa un valor para buscar.</p>';
+                contenedor.innerHTML = '<p style="color: #d32f2f;">Por favor, ingresa un valor.</p>';
                 return;
             }
 
-            contenedor.innerHTML = '<p>Buscando...</p>';
+            contenedor.innerHTML = '<p>Buscando en el servidor...</p>';
 
             try {
-                // Solo hacemos el fetch si es la primera búsqueda
-                if (!datosCacheados) {
-                    const respuesta = await fetch(API_URL);
-                    if (!respuesta.ok) throw new Error('Error en la red');
-                    datosCacheados = await respuesta.json();
-                }
-
-                // Filtrar los datos en memoria
-                const resultados = datosCacheados.filter(fila => {
-                    // Validamos que la celda no esté vacía antes de convertir a texto
-                    const valorCelda = fila[columna] ? fila[columna].toString().toLowerCase() : '';
-                    return valorCelda.includes(valor);
-                });
+                // Construimos la URL con los parámetros de búsqueda
+                // encodeURIComponent asegura que espacios o caracteres especiales no rompan la URL
+                const urlDeBusqueda = `${API_URL}?columna=${columna}&valor=${encodeURIComponent(valor)}`;
+                
+                const respuesta = await fetch(urlDeBusqueda);
+                if (!respuesta.ok) throw new Error('Error en la red');
+                
+                const resultados = await respuesta.json();
 
                 // Limpiar resultados anteriores
                 contenedor.innerHTML = '';
@@ -142,20 +134,17 @@
                     return;
                 }
 
-                // Renderizar los resultados encontrados
+                // Renderizar los resultados con las nuevas columnas A, B, C, D, E
                 resultados.forEach(fila => {
                     const div = document.createElement('div');
                     div.className = 'usuario';
                     
-                    // Extraemos los datos validando si existen, de lo contrario mostramos "N/A"
-                    const nombre = fila.Nombre || 'N/A';
-                    const curp = fila.CURP || 'N/A';
-                    const folio = fila.Folio || 'N/A';
-                    
                     div.innerHTML = `
-                        <strong>Nombre:</strong> ${nombre} <br>
-                        <strong>CURP:</strong> ${curp} <br>
-                        <strong>Folio:</strong> ${folio}
+                        <strong>Columna A:</strong> ${fila.DatoA || 'N/A'} <br>
+                        <strong>Columna B:</strong> ${fila.DatoB || 'N/A'} <br>
+                        <strong>Columna C:</strong> ${fila.DatoC || 'N/A'} <br>
+                        <strong>Columna D:</strong> ${fila.DatoD || 'N/A'} <br>
+                        <strong>Columna E:</strong> ${fila.DatoE || 'N/A'}
                     `;
                     contenedor.appendChild(div);
                 });
@@ -163,9 +152,9 @@
             } catch (error) {
                 console.error('Error del sistema:', error);
                 contenedor.innerHTML = '<p style="color: #d32f2f;">Hubo un error de conexión.</p>';
-                datosCacheados = null; // Reseteamos la caché para que el usuario pueda reintentar
             }
         }
     </script>
+  
 </body>
 </html>
