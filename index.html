@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+ <!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
@@ -7,7 +7,8 @@
     <style>
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #b2ff59; /* Verde claro brillante */
+            /* Fondo RGB 30-91-79 */
+            background-color: rgb(30, 91, 79); 
             margin: 0;
             display: flex;
             flex-direction: column;
@@ -20,10 +21,15 @@
             background: white;
             padding: 30px;
             border-radius: 12px;
-            box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.3);
             width: 95%;
-            max-width: 900px; /* Más ancho para la tabla */
+            max-width: 900px;
             text-align: center;
+        }
+
+        .logo-app {
+            max-width: 150px; 
+            margin-bottom: 20px;
         }
 
         .controles {
@@ -42,16 +48,19 @@
         }
 
         button {
-            background-color: #4caf50;
+            /* Botón RGB 156-35-72 */
+            background-color: rgb(156, 35, 72);
             color: white;
             border: none;
             cursor: pointer;
             font-weight: bold;
+            transition: background 0.3s;
         }
 
-        button:hover { background-color: #388e3c; }
+        button:hover { 
+            background-color: rgb(120, 25, 55); 
+        }
 
-        /* Estilos de la tabla */
         .contenedor-tabla {
             overflow-x: auto;
             margin-top: 20px;
@@ -66,7 +75,7 @@
         }
 
         th {
-            background: #4caf50;
+            background: rgb(30, 91, 79); /* Encabezados a juego */
             color: white;
             padding: 12px;
         }
@@ -83,6 +92,9 @@
 <body>
 
     <div class="tarjeta-busqueda">
+        <!-- Reemplaza el src con la URL de tu imagen -->
+        <img src="URL_DE_TU_IMAGEN.png" alt="Logo" class="logo-app">
+        
         <h2>Buscador de Registros</h2>
         
         <div class="controles">
@@ -95,13 +107,11 @@
             <button onclick="ejecutarBusqueda()">Buscar</button>
         </div>
 
-        <div id="contenedor-resultados">
-            <!-- Aquí se insertará la tabla -->
-        </div>
+        <div id="contenedor-resultados"></div>
     </div>
 
     <script>
-        // ¡IMPORTANTE! Cambia esta URL por la de tu nuevo despliegue en Google Apps Script
+        // ¡IMPORTANTE! Cambia esta URL por la de tu nuevo despliegue
         const API_URL = 'https://script.google.com/macros/s/AKfycbwwzviSj9taMZ-4PU02wKLPVGpiS7VUcdYdtB0Zb6HesIyMF9uyeEAWLReh8YKuLvDYdw/exec';
 
         async function ejecutarBusqueda() {
@@ -122,7 +132,6 @@
                     return;
                 }
 
-                // Construcción de la tabla
                 let html = `
                     <div class="contenedor-tabla">
                         <table>
