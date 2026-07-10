@@ -156,9 +156,9 @@
                 resultados.forEach(f => {
                     const tr = document.createElement('tr');
                     tr.innerHTML = `
-                        <td>${f.T}</td><td>${f.S}</td><td>${f.B}</td>
-                        <td>${f.D}</td><td>${f.F}</td><td>${f.G}</td>
-                        <td>${f.M}</td><td>${f.R}</td><td>${f.Q}</td>
+                        <td>${f.NOMBRE}</td><td>${f.ESTATUS}</td><td>${f.SARE}</td>
+                        <td>${f.MUNICIPIO}</td><td>${f.CCT}</td><td>${f.ESCUELA}</td>
+                        <td>${f.NIVEL}</td><td>${f.CURP}</td><td>${f.MES_REMESA}</td>
                     `;
                     tbody.appendChild(tr);
                 });
