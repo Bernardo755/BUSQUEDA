@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Buscador de Registros</title>
+    <title>Sistema de Búsqueda Seguro</title>
     <style>
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -34,7 +34,7 @@
         
         /* Contenedores de secciones */
         #login-section { display: block; max-width: 400px; margin: 0 auto; }
-        #app-section { display: none; } /* Oculto por defecto */
+        #app-section { display: none; }
 
         .controles, .login-form {
             display: flex;
@@ -67,10 +67,9 @@
         .btn-logout { background-color: #555; margin-top: 20px; width: 100%;}
         .btn-logout:hover { background-color: #333; }
 
-        /* Estilos de tabla omitidos por brevedad, son los mismos que ya tenías */
         .contenedor-tabla { overflow-x: auto; margin-top: 20px; border: 1px solid #ddd; border-radius: 8px; }
         table { width: 100%; border-collapse: collapse; font-size: 14px; }
-        th { background: rgb(30, 91, 79); color: white; padding: 12px; }
+        th { background: rgb(30, 91, 79); color: white; padding: 12px; text-transform: uppercase; }
         td { padding: 10px; border-bottom: 1px solid #eee; white-space: nowrap; }
         tr:hover { background-color: #f1f8e9; }
     </style>
@@ -79,19 +78,21 @@
 
     <!-- SECCIÓN DE LOGIN -->
     <div id="login-section" class="tarjeta">
-        <img src="LOG12.png" alt="Logo" class="logo-app">
-        <h2>Iniciar Sesión</h2>
+        <!-- Reemplaza el contenido de src con el Base64 de tu imagen real para ocultarla del inspector -->
+        <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=" alt="Logo" class="logo-app">
+        <h2>Acceso al Sistema</h2>
         <div class="login-form">
             <input type="text" id="user" placeholder="Usuario">
             <input type="password" id="pass" placeholder="Contraseña">
             <button onclick="iniciarSesion()">Entrar</button>
         </div>
-        <div id="login-mensaje" style="color: red; font-weight: bold;"></div>
+        <div id="login-mensaje" style="color: red; font-weight: bold; margin-top: 10px;"></div>
     </div>
 
-    <!-- SECCIÓN DE BÚSQUEDA (Oculta al inicio) -->
+    <!-- SECCIÓN DE BÚSQUEDA -->
     <div id="app-section" class="tarjeta">
-        <img src="LOG12.png" alt="Logo" class="logo-app">
+        <!-- Misma imagen Base64 -->
+        <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=" alt="Logo" class="logo-app">
         <h2>Buscador de Registros</h2>
         
         <div class="controles-busqueda">
@@ -110,16 +111,33 @@
 
     <script>
         // PEGA AQUÍ LA NUEVA URL DE TU IMPLEMENTACIÓN DE GOOGLE APPS SCRIPT
-        const API_URL = 'https://script.google.com/macros/s/AKfycbxglwtvgIXzc_aMUJOZhuKuEY7WSjEWu7-f8g1sJtnjC0_0Yz_ZQYbLW3X9y4lujfypxw/exec';
+        const API_URL = 'https://script.google.com/macros/s/AKfycbxMLTtoyxsmkGq2ycyNnF760CT1ywRq5P_xO4vTyc7PmNWN1xdXDbpS8urQBB1jzNGktw/exec';
         
-        let usuarioActual = ""; // Guardará quién está usando la app
+        let usuarioActual = ""; 
+        let datosDispositivo = { ip: "Obteniendo...", ubicacion: "Obteniendo..." };
 
-        // Función centralizada para hacer peticiones POST
+        // OBTENER IP Y UBICACIÓN AUTOMÁTICAMENTE AL ABRIR LA PÁGINA
+        window.onload = async function() {
+            try {
+                const response = await fetch('https://ipapi.co/json/');
+                const data = await response.json();
+                datosDispositivo.ip = data.ip || "No disponible";
+                datosDispositivo.ubicacion = data.city ? `${data.city}, ${data.region}, ${data.country_name}` : "No disponible";
+            } catch (error) {
+                datosDispositivo.ip = "No disponible";
+                datosDispositivo.ubicacion = "No disponible";
+            }
+        };
+
+        // FUNCIÓN CENTRAL PARA ENVIAR DATOS A GOOGLE SCRIPT
         async function enviarPeticion(datos) {
+            datos.ip = datosDispositivo.ip;
+            datos.ubicacion = datosDispositivo.ubicacion;
+
             const respuesta = await fetch(API_URL, {
                 method: 'POST',
                 body: JSON.stringify(datos),
-                headers: { 'Content-Type': 'text/plain;charset=utf-8' } // text/plain evita errores CORS en Apps Script
+                headers: { 'Content-Type': 'text/plain;charset=utf-8' } 
             });
             return await respuesta.json();
         }
@@ -129,8 +147,12 @@
             const pass = document.getElementById('pass').value.trim();
             const msj = document.getElementById('login-mensaje');
 
-            if (!user || !pass) return msj.innerText = "Llena ambos campos.";
-            msj.innerText = "Verificando...";
+            if (!user || !pass) {
+                msj.innerText = "Por favor, llena ambos campos.";
+                return;
+            }
+            
+            msj.innerText = "Verificando credenciales...";
 
             try {
                 const res = await enviarPeticion({ action: "login", usuario: user, password: pass });
@@ -146,7 +168,7 @@
                     msj.innerText = res.error;
                 }
             } catch (e) {
-                msj.innerText = "Error de conexión.";
+                msj.innerText = "Error de conexión con la base de datos.";
             }
         }
 
@@ -155,11 +177,10 @@
             const columna = document.getElementById('columnaBusqueda').value;
             const contenedor = document.getElementById('contenedor-resultados');
 
-            if (!valor) return alert("Por favor ingresa un valor");
-            contenedor.innerHTML = '<p>Consultando servidor...</p>';
+            if (!valor) return alert("Por favor ingresa un valor para buscar.");
+            contenedor.innerHTML = '<p style="font-weight:bold; color: #555;">Consultando servidor...</p>';
 
             try {
-                // Ahora enviamos el usuarioActual para que la bitácora sepa quién busca
                 const resultados = await enviarPeticion({ 
                     action: "buscar", 
                     usuario: usuarioActual, 
@@ -195,21 +216,27 @@
                 resultados.forEach(f => {
                     const tr = document.createElement('tr');
                     tr.innerHTML = `
-                        <td>${f.NOMBRE}</td><td>${f.ESTATUS}</td><td>${f.SARE}</td>
-                        <td>${f.MUNICIPIO}</td><td>${f.CCT}</td><td>${f.ESCUELA}</td>
-                        <td>${f.NIVEL}</td><td>${f.CURP}</td><td>${f.MES_REMESA}</td>
+                        <td>${f.NOMBRE || ""}</td>
+                        <td>${f.ESTATUS || ""}</td>
+                        <td>${f.SARE || ""}</td>
+                        <td>${f.MUNICIPIO || ""}</td>
+                        <td>${f.CCT || ""}</td>
+                        <td>${f.ESCUELA || ""}</td>
+                        <td>${f.NIVEL || ""}</td>
+                        <td>${f.CURP || ""}</td>
+                        <td>${f.MES_REMESA || ""}</td>
                     `;
                     tbody.appendChild(tr);
                 });
 
             } catch (error) {
-                contenedor.innerHTML = '<p style="color:red;">Error al conectar con la base de datos.</p>';
+                contenedor.innerHTML = '<p style="color:red;">Error al recibir los datos.</p>';
             }
         }
 
         async function cerrarSesion() {
             if(usuarioActual) {
-                // Le avisamos a Google Script que cerramos sesión para la bitácora
+                document.getElementById('contenedor-resultados').innerHTML = '<p>Cerrando sesión...</p>';
                 await enviarPeticion({ action: "logout", usuario: usuarioActual });
             }
             usuarioActual = "";
