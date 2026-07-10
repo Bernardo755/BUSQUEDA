@@ -1,4 +1,4 @@
- <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
@@ -7,7 +7,6 @@
     <style>
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            /* Fondo RGB 30-91-79 */
             background-color: rgb(30, 91, 79); 
             margin: 0;
             display: flex;
@@ -15,45 +14,48 @@
             align-items: center;
             justify-content: center;
             min-height: 100vh;
-       }
-
-        /* AJUSTE APLICADO: La imagen ocupa el 50% del ancho del contenedor */
-        .logo-app {
-            width: 50%; 
-            height: auto; /* Mantiene la proporción para no deformarse */
-            margin-bottom: 20px;
-         background-color: white; /* Esto hará que el fondo negro se vea como un recuadro blanco */
-    border-radius: 8px;
         }
-        .tarjeta-busqueda {
+        .tarjeta {
             background: white;
             padding: 30px;
             border-radius: 12px;
             box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+            text-align: center;
             width: 95%;
             max-width: 900px;
-            text-align: center;
         }
+        .logo-app {
+            width: 50%; 
+            height: auto;
+            margin-bottom: 20px;
+            background-color: white;
+            border-radius: 8px;
+        }
+        
+        /* Contenedores de secciones */
+        #login-section { display: block; max-width: 400px; margin: 0 auto; }
+        #app-section { display: none; } /* Oculto por defecto */
 
-      
-
-        .controles {
+        .controles, .login-form {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        .controles-busqueda {
             display: flex;
             flex-direction: row;
             gap: 10px;
-            margin-bottom: 20px;
             justify-content: center;
+            flex-wrap: wrap;
         }
-
         input, select, button {
             padding: 12px;
             font-size: 16px;
             border: 1px solid #ccc;
             border-radius: 6px;
         }
-
         button {
-            /* Botón RGB 156-35-72 */
             background-color: rgb(156, 35, 72);
             color: white;
             border: none;
@@ -61,49 +63,38 @@
             font-weight: bold;
             transition: background 0.3s;
         }
+        button:hover { background-color: rgb(120, 25, 55); }
+        .btn-logout { background-color: #555; margin-top: 20px; width: 100%;}
+        .btn-logout:hover { background-color: #333; }
 
-        button:hover { 
-            background-color: rgb(120, 25, 55); 
-        }
-
-        .contenedor-tabla {
-            overflow-x: auto;
-            margin-top: 20px;
-            border: 1px solid #ddd;
-            border-radius: 8px;
-        }
-
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            font-size: 14px;
-        }
-
-        th {
-            background: rgb(30, 91, 79); /* Encabezados a juego */
-            color: white;
-            padding: 12px;
-        }
-
-        td {
-            padding: 10px;
-            border-bottom: 1px solid #eee;
-            white-space: nowrap;
-        }
-
+        /* Estilos de tabla omitidos por brevedad, son los mismos que ya tenías */
+        .contenedor-tabla { overflow-x: auto; margin-top: 20px; border: 1px solid #ddd; border-radius: 8px; }
+        table { width: 100%; border-collapse: collapse; font-size: 14px; }
+        th { background: rgb(30, 91, 79); color: white; padding: 12px; }
+        td { padding: 10px; border-bottom: 1px solid #eee; white-space: nowrap; }
         tr:hover { background-color: #f1f8e9; }
     </style>
 </head>
 <body>
 
-    <div class="tarjeta-busqueda">
-        <!-- Reemplaza el src con la URL de tu imagen -->
+    <!-- SECCIÓN DE LOGIN -->
+    <div id="login-section" class="tarjeta">
         <img src="LOG12.png" alt="Logo" class="logo-app">
-     
-        
+        <h2>Iniciar Sesión</h2>
+        <div class="login-form">
+            <input type="text" id="user" placeholder="Usuario">
+            <input type="password" id="pass" placeholder="Contraseña">
+            <button onclick="iniciarSesion()">Entrar</button>
+        </div>
+        <div id="login-mensaje" style="color: red; font-weight: bold;"></div>
+    </div>
+
+    <!-- SECCIÓN DE BÚSQUEDA (Oculta al inicio) -->
+    <div id="app-section" class="tarjeta">
+        <img src="LOG12.png" alt="Logo" class="logo-app">
         <h2>Buscador de Registros</h2>
         
-        <div class="controles">
+        <div class="controles-busqueda">
             <input type="text" id="valorBusqueda" placeholder="Valor a buscar...">
             <select id="columnaBusqueda">
                 <option value="Nombre">Nombre</option>
@@ -114,11 +105,50 @@
         </div>
 
         <div id="contenedor-resultados"></div>
+        <button class="btn-logout" onclick="cerrarSesion()">Cerrar Sesión</button>
     </div>
 
     <script>
-        // ¡IMPORTANTE! Cambia esta URL por la de tu nuevo despliegue
-        const API_URL = 'https://script.google.com/macros/s/AKfycbyzi2GJvKMWRPFBZOvEPUZ_JJIzAGEv0D9mW4SXHoGlYyKfCnnMA3RirqyGjTJd8ujYvw/exec';
+        // PEGA AQUÍ LA NUEVA URL DE TU IMPLEMENTACIÓN DE GOOGLE APPS SCRIPT
+        const API_URL = 'https://script.google.com/macros/s/TU_NUEVA_URL/exec';
+        
+        let usuarioActual = ""; // Guardará quién está usando la app
+
+        // Función centralizada para hacer peticiones POST
+        async function enviarPeticion(datos) {
+            const respuesta = await fetch(API_URL, {
+                method: 'POST',
+                body: JSON.stringify(datos),
+                headers: { 'Content-Type': 'text/plain;charset=utf-8' } // text/plain evita errores CORS en Apps Script
+            });
+            return await respuesta.json();
+        }
+
+        async function iniciarSesion() {
+            const user = document.getElementById('user').value.trim();
+            const pass = document.getElementById('pass').value.trim();
+            const msj = document.getElementById('login-mensaje');
+
+            if (!user || !pass) return msj.innerText = "Llena ambos campos.";
+            msj.innerText = "Verificando...";
+
+            try {
+                const res = await enviarPeticion({ action: "login", usuario: user, password: pass });
+                
+                if (res.exito) {
+                    usuarioActual = user;
+                    document.getElementById('login-section').style.display = 'none';
+                    document.getElementById('app-section').style.display = 'block';
+                    document.getElementById('user').value = '';
+                    document.getElementById('pass').value = '';
+                    msj.innerText = "";
+                } else {
+                    msj.innerText = res.error;
+                }
+            } catch (e) {
+                msj.innerText = "Error de conexión.";
+            }
+        }
 
         async function ejecutarBusqueda() {
             const valor = document.getElementById('valorBusqueda').value.trim();
@@ -126,12 +156,21 @@
             const contenedor = document.getElementById('contenedor-resultados');
 
             if (!valor) return alert("Por favor ingresa un valor");
-
             contenedor.innerHTML = '<p>Consultando servidor...</p>';
 
             try {
-                const response = await fetch(`${API_URL}?columna=${columna}&valor=${encodeURIComponent(valor)}`);
-                const resultados = await response.json();
+                // Ahora enviamos el usuarioActual para que la bitácora sepa quién busca
+                const resultados = await enviarPeticion({ 
+                    action: "buscar", 
+                    usuario: usuarioActual, 
+                    columna: columna, 
+                    valor: valor 
+                });
+
+                if (resultados.length > 0 && resultados[0].error) {
+                    contenedor.innerHTML = `<p style="color:red; font-weight:bold;">${resultados[0].error}</p>`;
+                    return;
+                }
 
                 if (resultados.length === 0) {
                     contenedor.innerHTML = '<p>No se encontraron registros.</p>';
@@ -166,6 +205,18 @@
             } catch (error) {
                 contenedor.innerHTML = '<p style="color:red;">Error al conectar con la base de datos.</p>';
             }
+        }
+
+        async function cerrarSesion() {
+            if(usuarioActual) {
+                // Le avisamos a Google Script que cerramos sesión para la bitácora
+                await enviarPeticion({ action: "logout", usuario: usuarioActual });
+            }
+            usuarioActual = "";
+            document.getElementById('contenedor-resultados').innerHTML = '';
+            document.getElementById('valorBusqueda').value = '';
+            document.getElementById('app-section').style.display = 'none';
+            document.getElementById('login-section').style.display = 'block';
         }
     </script>
 </body>
